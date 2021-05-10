@@ -53,7 +53,7 @@ const ViewMap = () => {
         var infowindow = new kakao.maps.InfoWindow({ zIndex: 1 });
 
         // 목록과 마커 보여주는 함수 실행
-        displayPlaces(markers);
+        displayPlaces(markers); 
     
         //조회 목록과 마커를 표출하는 함수
         function displayPlaces(markers) {
