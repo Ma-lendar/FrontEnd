@@ -11,15 +11,14 @@ const SET_MARKER = "SET_MARKER";
 //여기서 marker => dispatch(addMarker(marker_info))의 marker_info 부분과 동일
 //                 + reducer에서 action.payload.marker로 사용됨
 const addMarker = createAction(ADD_MARKER, (marker) => ({marker}))
-const setMarker = createAction(SET_MARKER, (hotMarker_list, normalMarker_list) => ({hotMarker_list, normalMarker_list}))
+const setMarker = createAction(SET_MARKER, (marker) => ({marker}))
 
 const initialState = { }
 
 //MarkerModal.js의 modal창에서 입력받은 값으로 생성한 marker정보를 
 //axios로 서버에 보내고 그 결과를 받는 함수
 const addMarkerAX = (marker) => {
-
-  return function(dispatch) {
+    return function(dispatch) {
 
     //받아온 marker 정보를 서버에 보냄
     axios.post(`${config.api}/marker`, {
