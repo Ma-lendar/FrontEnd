@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { actionCreators as markerActions } from "../redux/modules/marker";
@@ -12,33 +12,13 @@ const { kakao } = window;
 
 
 const ViewMap = () => {
+
+
+    const [markers, setMarkers] = useState([]);
     
     useEffect(() => {
         //마커 여러개 담을 빈 배열 생성
-        let markers = [];
-
-        // //서버에서 marker 정보를 받아옴
-        // axios.get('http://54.180.114.220/api/markers')
-        //     .then((response) => {
-        //         console.log(response.data);
-
-        //         response.data.forEach((marker) => {
-        //             let _marker = {
-        //                 title: marker.title,
-        //                 address: marker.address,
-        //                 lat: marker.lat,
-        //                 lng: marker.lng,
-        //             }
-        //             //마커 배열에 받아온 마커들을 담아준다.
-        //             markers.push(_marker);
-        //             console.log(markers);
-        //         })
-        //     })
-        //     .catch((error) => {
-        //         console.log(error);
-        //         alert("지도를 불러오는 데 실패하였습니다");
-        //     })
-
+        // let markers = [];
         
         //지도 생성
         const container = document.getElementById('myMap');
@@ -52,11 +32,54 @@ const ViewMap = () => {
         // 인포윈도우 객체 생성
         var infowindow = new kakao.maps.InfoWindow({ zIndex: 1 });
 
-        // 목록과 마커 보여주는 함수 실행
-        displayPlaces(markers); 
+
+        //서버에서 marker 정보를 받아옴
+        axios.get('http://54.180.114.220/api/markers')
+            //성공하면
+            .then((response) => {
+                //서버에서 보낸 마커 데이터 전체
+                console.log(response.data);
+                
+                let places = response.data;
+                // 조회 목록과 마커 보여주는 함수 실행
+                displayPlaces(places);
+
+                // response.data.forEach((marker) => {
+                //     //한 마커의 전체 정보 
+                //     console.log(marker);
+
+                //     // 마커 하나에 필요한 정보만 넣어 마커 생성
+                //     let _marker = {
+                //         title: marker.title,
+                //         address: marker.address,
+                //         lat: marker.lat,
+                //         lng: marker.lng,
+                //     }
+
+                //     //markers에 마커 정보 담기
+                //     setMarkers(_marker);
+                    
+                //     console.log(markers);
+                    
+                //     // 마커 정보로 목록과 마커 보여주는 함수 실행
+                //     displayPlaces(markers);
+                // })
+                
+                // console.log(markers); //56번째줄 콘솔 (0번째 하나 받아옴)
+            })
+            //실패하면
+            .catch((error) => {
+                console.log(error);
+                // alert("지도를 불러오는 데 실패하였습니다");
+            })
+
+
+
     
         //조회 목록과 마커를 표출하는 함수
-        function displayPlaces(markers) {
+        function displayPlaces(places) {
+            console.log(places); //서버에서 보내온 데이터 4개 (잘 받아옴)
+
             var listEl = document.getElementById('placesList');
             var menuEl = document.getElementById('menu_wrap');
             var fragment = document.createDocumentFragment();
@@ -64,15 +87,21 @@ const ViewMap = () => {
 
             // 검색 결과 목록에 추가된 항목들을 제거합니다
             removeAllChildNods(listEl);
+            console.log(listEl);
 
+            // ** 이 함수를 지우면 지도가 사라지는 대신 마커가 나타남
+            // ** 함수를 살려놓으면 마커는 없지만 지도는 나옴 (여기부터 아래가 실행이 안됨)
             // 지도에 표시되고 있는 마커를 제거합니다
-            removeMarker();
+            // removeMarker();
 
             // 배치된 마커 기준으로 지도범위 재설정 + hover 시 인포윈도우에 장소명 표시
-            for (var i = 0; i < markers.length; i++) {
-                var placePosition = new kakao.maps.LatLng(markers[i].lat, markers[i].lng); //지도에 좌표위치 잡기
+            for (var i = 0; i < places.length; i++) {
+                //지도 위에 마커 놓을 좌표 위치 
+                var placePosition = new kakao.maps.LatLng(places[i].lat, places[i].lng); 
+                console.log(placePosition); //안 찍힘
+                
                 var marker = addMarker(placePosition, i); // 지도에 마커 생성하는 함수 실행
-                var itemEl = getListItem(i, markers[i]); // 조회 결과 항목 Element를 생성하는 함수 실행
+                var itemEl = getListItem(i, places[i]); // 조회 결과 항목 Element를 생성하는 함수 실행
 
                 // 지도 범위를 재설정하기 위해
                 // LatLngBounds 객체에 좌표를 추가합니다
@@ -99,11 +128,10 @@ const ViewMap = () => {
                         infowindow.close();
                     };
 
-                })(marker, markers[i].title);
+                })(marker, places[i].title);
 
                 //임시 객체에 만들어진 각 항목을 자식노드로 추가
                 fragment.appendChild(itemEl);
-
             }
 
             // 자식 항목을 모은 것을 전체 목록(listEl)에 추가합니다
@@ -195,14 +223,15 @@ const ViewMap = () => {
         }
         
 
-        // 지도 위에 표시되고 있는 마커를 모두 제거합니다
-        function removeMarker() {
-            for (var i = 0; i < markers.length; i++) {
-                markers[i].setMap(null);
-            }
-            //마커 빈 배열 반환
-            markers = [];
-        }
+        // // removeMarker 함수 살려야 지도위에 이상한 흰 사각형 안뜸
+        // // 지도 위에 표시되고 있는 마커를 모두 제거합니다
+        // function removeMarker() {
+        //     for (var i = 0; i < markers.length; i++) {
+        //         markers[i].setMap(map);
+        //     }
+        //     //마커 빈 배열 반환
+        //     markers = [];
+        // }
         
         // 마커를 클릭했을 때 호출되는 함수입니다
         // 인포윈도우에 장소명을 표시합니다

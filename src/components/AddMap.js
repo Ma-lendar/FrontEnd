@@ -99,7 +99,7 @@ const AddMap = ({ keyword }) => {
         //  useState의 _marker를 클릭된 마커로 바꿔줌
         kakao.maps.event.addListener(marker, 'click', function () {
             setTitle(place.place_name);
-            setMarker(place);
+            setMarker(place.place_name);
         });
     }
     
@@ -108,12 +108,15 @@ const AddMap = ({ keyword }) => {
 
     
     //추가버튼 눌렀을 때 서버로 마커 보내는 함수
-    function addMaps(marker, index) {
-        let title = marker.place_name;
-        let address = marker.address_name;
+    function addMaps(_marker) {
+
+        console.log(_marker);
+
+        let title = _marker.place_name;
+        let address = _marker.address_name;
         let rank = index;
-        let lat = marker.x;
-        let lng = marker.y;
+        let lat = _marker.x;
+        let lng = _marker.y;
     
         let data = {
             'map_title': title,
@@ -150,7 +153,7 @@ const AddMap = ({ keyword }) => {
 
             {/* 지도 아래 확인용 텍스트 창 */}
             <PlaceName type="text" value={title} placeholder="선택된 장소명" disabled />
-            <button onClick={addMaps(_marker, index)}>추가</button>
+            <button onClick={addMaps}>추가</button>
         </MapsBlock>
 
     );
